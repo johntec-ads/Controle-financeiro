@@ -5,6 +5,8 @@ const balanceDisplay = document.querySelector('#balance');
 const form = document.querySelector('#form');
 const inputTransactionName = document.querySelector('#text')
 const inputTransactionAmount = document.querySelector('#amount')
+const inputTransactionCategory = document.querySelector('#category')
+const inputTransactionType = document.querySelector('#type')
 
 //API salva os dados no local storage.
 const localStorageTransactions = JSON.parse(localStorage
@@ -21,7 +23,7 @@ const removeTransaction = ID => {
 
 
 //Adicionar as transações do DOM.
-const addTransactionIntoDOM = ({ amount, name, id }) => {
+const addTransactionIntoDOM = ({ amount, name, id, category }) => {
   const operator = amount < 0 ? '-' : '+';//Menor que 0, recebe a string (-),senão (+).   
   const CSSClass = amount < 0 ? 'minus' : 'plus';//String para uma id class:(minus),ou (plus).
   const amountWithoutOperator = Math.abs(amount);
@@ -30,8 +32,10 @@ const addTransactionIntoDOM = ({ amount, name, id }) => {
 
   /* Setando a marcação interna dentro da (li) com o li.innerHTML */
   li.innerHTML = `
-  ${name} <span>${operator} R$ ${amountWithoutOperator}</span>
-   <button class="delete-btn" onClick="removeTransaction(${id})">x</button>
+    ${name} 
+    <span class="category-tag">${category}</span>
+    <span>${operator} R$ ${amountWithoutOperator}</span>
+    <button class="delete-btn" onClick="removeTransaction(${id})">x</button>
   `
   transactionUl.append(li);
   /* Metodo append(Argumento)-insere o elemento como último filho.
@@ -72,36 +76,31 @@ const convertNumberToReal = number => {
 
 
 const updateBalanceValues = () => {
-  const transactionAmounts = transactions.map(({ amount }) =>
-    amount);
+  const transactionAmounts = transactions.map(({ amount }) => amount);
 
-  /* Mudança no código */
-  //Original
-  /* const total = getTotal(transactionAmounts); */
-
-  /* Alterado */
-
-
-  const total = convertNumberToReal(Number(getTotal
-    (transactionAmounts)));
-
+  const totalAmount = Number(getTotal(transactionAmounts));
+  const total = convertNumberToReal(Math.abs(totalAmount)); // Removendo sinal negativo
   const income = convertNumberToReal(Number(getIncome(transactionAmounts)));
-
   const expense = convertNumberToReal(Number(getExpenses(transactionAmounts)));
 
+  // Atualizar classe do saldo baseado no valor
+  balanceDisplay.classList.remove('positive', 'negative');
+  balanceDisplay.classList.add(totalAmount >= 0 ? 'positive' : 'negative');
 
-
+  // Atualizar valores
+  balanceDisplay.innerText = `R$ ${total}`;
   incomeDisplay.innerText = `R$ ${income}`;
-	expenseDisplay.innerText = `- R$ ${expense}`;
-	balanceDisplay.innerText = `R$ ${total}`;
-
-
+  expenseDisplay.innerText = `R$ ${expense}`;
 }
+
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
 const init = () => {
   transactionUl.innerHTML = '';
   transactions.forEach(addTransactionIntoDOM);
   updateBalanceValues();
+  if (typeof updateCharts === 'function') { // Adiciona verificação
+    updateCharts();
+  }
 }
 
 init();
@@ -112,17 +111,21 @@ const updateLocalStorage = () => {
 
 const generateID = () => (Math.random() * 1000)
 
-const addToTransactionsArray = (transactionName, transactionAmount) => {
+const addToTransactionsArray = (transactionName, transactionAmount, transactionCategory, transactionType) => {
+  const amount = transactionType === 'expense' ? -Math.abs(transactionAmount) : Math.abs(transactionAmount);
+  
   transactions.push({
     id: generateID(),
     name: transactionName,
-    amount: Number(transactionAmount)
+    amount: Number(amount),
+    category: transactionCategory
   })
 }
 
 const cleanInputs = () => {
   inputTransactionName.value = ''
   inputTransactionAmount.value = ''
+  inputTransactionType.value = 'income' // Reset para receita
 }
 
 const handFormSubmit = event => {
@@ -130,6 +133,8 @@ const handFormSubmit = event => {
 
   const transactionName = inputTransactionName.value.trim();
   const transactionAmount = inputTransactionAmount.value.trim();
+  const transactionCategory = inputTransactionCategory.value;
+  const transactionType = inputTransactionType.value;
   const isSomeInputEmpty = transactionName === '' || transactionAmount === '';
 
   if (isSomeInputEmpty) {
@@ -137,7 +142,7 @@ const handFormSubmit = event => {
     return
   }
 
-  addToTransactionsArray(transactionName, transactionAmount);
+  addToTransactionsArray(transactionName, transactionAmount, transactionCategory, transactionType);
   init();
 
   updateLocalStorage();

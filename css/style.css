@@ -88,6 +88,16 @@ input[type='number'] {
   width: 100%;
 }
 
+select {
+  border: 1px solid #dedede;
+  border-radius: 2px;
+  display: block;
+  font-size: 16px;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 .btn {
   cursor: pointer;
   background-color: #9c88ff;
@@ -149,4 +159,45 @@ input[type='number'] {
 
 .transactions li:hover .delete-btn {
   opacity: 1;
+}
+
+.category-tag {
+  background-color: #e0e0e0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin: 0 8px;
+}
+
+.charts-container {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+}
+
+.filters {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+}
+
+.filters h4 {
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.filters .form-control {
+  margin-bottom: 8px;
+}
+
+.balance.positive {
+  color: #2e75cc;  /* Azul para saldo positivo */
+}
+
+.balance.negative {
+  color: #e74c3c;  /* Vermelho para saldo negativo */
 }
