@@ -163,23 +163,24 @@ const updateBalanceValues = () => {
 }
 
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
-const init = () => {
-  transactionUl.innerHTML = '';
-  
-  // Separar e ordenar transações
-  const receitas = transactions.filter(t => t.amount >= 0)
-    .sort((a, b) => b.amount - a.amount);
-  
-  const despesas = transactions.filter(t => t.amount < 0)
-    .sort((a, b) => a.amount - b.amount);
+const init = async () => {
+  try {
+    transactions = await api.getTransactions();
+    transactionUl.innerHTML = '';
+    
+    const receitas = transactions.filter(t => t.amount >= 0)
+      .sort((a, b) => b.amount - a.amount);
+    
+    const despesas = transactions.filter(t => t.amount < 0)
+      .sort((a, b) => a.amount - b.amount);
 
-  // Adicionar primeiro as receitas, depois as despesas
-  receitas.forEach(addTransactionIntoDOM);
-  despesas.forEach(addTransactionIntoDOM);
-  
-  updateBalanceValues();
-  if (typeof updateCharts === 'function') { // Adiciona verificação
+    receitas.forEach(addTransactionIntoDOM);
+    despesas.forEach(addTransactionIntoDOM);
+    
+    updateBalanceValues();
     updateCharts();
+  } catch (error) {
+    console.error('Erro ao carregar transações:', error);
   }
 }
 
