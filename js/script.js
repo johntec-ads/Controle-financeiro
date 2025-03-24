@@ -7,6 +7,60 @@ const inputTransactionName = document.querySelector('#text')
 const inputTransactionAmount = document.querySelector('#amount')
 const inputTransactionCategory = document.querySelector('#category')
 const inputTransactionType = document.querySelector('#type')
+const inputTransactionDate = document.querySelector('#date')
+
+const modal = document.getElementById('categoryModal');
+const categoryManagerModal = document.getElementById('categoryManagerModal');
+const addCategoryBtn = document.getElementById('add-category');
+
+// Array para armazenar categorias
+let categories = JSON.parse(localStorage.getItem('categories')) || [
+  'alimentacao', 'transporte', 'moradia', 'lazer', 'saude', 'outros'
+];
+
+// Função para abrir modal
+const openModal = () => {
+  modal.style.display = 'block';
+}
+
+// Função para fechar modal
+const closeModal = () => {
+  modal.style.display = 'none';
+  document.getElementById('newCategory').value = '';
+}
+
+// Função para salvar nova categoria
+const saveNewCategory = () => {
+  const newCategory = document.getElementById('newCategory').value.trim();
+  if (newCategory) {
+    categories.push(newCategory);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    updateCategorySelects();
+    closeModal();
+  }
+}
+
+// Função para atualizar os selects de categoria
+const updateCategorySelects = () => {
+  const selects = [
+    document.getElementById('category'),
+    document.getElementById('filter-category')
+  ];
+  selects.forEach(select => {
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">Todas</option>';
+    categories.forEach(category => {
+      select.innerHTML += `<option value="${category}">${category}</option>`;
+    });
+    select.value = currentValue;
+  });
+}
+
+// Adicionar evento ao botão de nova categoria
+addCategoryBtn.addEventListener('click', openModal);
+
+// Inicializar os selects de categoria
+updateCategorySelects();
 
 //API salva os dados no local storage.
 const localStorageTransactions = JSON.parse(localStorage
@@ -73,24 +127,44 @@ const convertNumberToReal = number => {
   return newNumber
 }
 
+// Refatorando a função de conversão para Real
+const formatarParaReal = (valor) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(valor);
+}
 
+// Refatorando funções de cálculo
+const calcularDespesas = transacoes => {
+  return Math.abs(transacoes
+    .filter(valor => valor < 0)
+    .reduce((total, valor) => total + valor, 0));
+}
+
+const calcularReceitas = transacoes => {
+  return transacoes
+    .filter(valor => valor > 0)
+    .reduce((total, valor) => total + valor, 0);
+}
+
+const calcularSaldoTotal = transacoes => {
+  return transacoes.reduce((total, valor) => total + valor, 0);
+}
 
 const updateBalanceValues = () => {
   const transactionAmounts = transactions.map(({ amount }) => amount);
 
-  const totalAmount = Number(getTotal(transactionAmounts));
-  const total = convertNumberToReal(Math.abs(totalAmount)); // Removendo sinal negativo
-  const income = convertNumberToReal(Number(getIncome(transactionAmounts)));
-  const expense = convertNumberToReal(Number(getExpenses(transactionAmounts)));
+  const totalAmount = calcularSaldoTotal(transactionAmounts);
+  const receitas = calcularReceitas(transactionAmounts);
+  const despesas = calcularDespesas(transactionAmounts);
 
-  // Atualizar classe do saldo baseado no valor
   balanceDisplay.classList.remove('positive', 'negative');
   balanceDisplay.classList.add(totalAmount >= 0 ? 'positive' : 'negative');
 
-  // Atualizar valores
-  balanceDisplay.innerText = `R$ ${total}`;
-  incomeDisplay.innerText = `R$ ${income}`;
-  expenseDisplay.innerText = `R$ ${expense}`;
+  balanceDisplay.innerText = formatarParaReal(Math.abs(totalAmount));
+  incomeDisplay.innerText = formatarParaReal(receitas);
+  expenseDisplay.innerText = formatarParaReal(despesas);
 }
 
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
@@ -111,21 +185,23 @@ const updateLocalStorage = () => {
 
 const generateID = () => (Math.random() * 1000)
 
-const addToTransactionsArray = (transactionName, transactionAmount, transactionCategory, transactionType) => {
+const addToTransactionsArray = (transactionName, transactionAmount, transactionCategory, transactionType, transactionDate) => {
   const amount = transactionType === 'expense' ? -Math.abs(transactionAmount) : Math.abs(transactionAmount);
   
   transactions.push({
     id: generateID(),
     name: transactionName,
     amount: Number(amount),
-    category: transactionCategory
+    category: transactionCategory,
+    date: transactionDate || new Date().toISOString().split('T')[0]
   })
 }
 
 const cleanInputs = () => {
   inputTransactionName.value = ''
   inputTransactionAmount.value = ''
-  inputTransactionType.value = 'income' // Reset para receita
+  inputTransactionType.value = 'income'
+  inputTransactionDate.value = ''
 }
 
 const handFormSubmit = event => {
@@ -135,6 +211,7 @@ const handFormSubmit = event => {
   const transactionAmount = inputTransactionAmount.value.trim();
   const transactionCategory = inputTransactionCategory.value;
   const transactionType = inputTransactionType.value;
+  const transactionDate = inputTransactionDate.value;
   const isSomeInputEmpty = transactionName === '' || transactionAmount === '';
 
   if (isSomeInputEmpty) {
@@ -142,7 +219,7 @@ const handFormSubmit = event => {
     return
   }
 
-  addToTransactionsArray(transactionName, transactionAmount, transactionCategory, transactionType);
+  addToTransactionsArray(transactionName, transactionAmount, transactionCategory, transactionType, transactionDate);
   init();
 
   updateLocalStorage();
@@ -151,3 +228,43 @@ const handFormSubmit = event => {
 }
 
 form.addEventListener('submit', handFormSubmit)
+
+// Funções de gerenciamento de categorias
+const openCategoryManager = () => {
+  const categoriesList = document.getElementById('categories-list');
+  categoriesList.innerHTML = '';
+  
+  categories.forEach(category => {
+    const div = document.createElement('div');
+    div.className = `category-item ${category === 'outros' ? 'protected' : ''}`;
+    div.innerHTML = `
+      ${category}
+      ${category !== 'outros' ? 
+        `<button onclick="deleteCategory('${category}')">&times;</button>` 
+        : ''}
+    `;
+    categoriesList.appendChild(div);
+  });
+  
+  categoryManagerModal.style.display = 'block';
+}
+
+const closeCategoryManager = () => {
+  categoryManagerModal.style.display = 'none';
+}
+
+const deleteCategory = (category) => {
+  if (confirm(`Deseja realmente deletar a categoria "${category}"?`)) {
+    const hasTransactions = transactions.some(t => t.category === category);
+    
+    if (hasTransactions) {
+      alert('Não é possível deletar uma categoria que possui transações.');
+      return;
+    }
+
+    categories = categories.filter(c => c !== category);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    updateCategorySelects();
+    openCategoryManager(); // Atualiza a lista de categorias
+  }
+}
