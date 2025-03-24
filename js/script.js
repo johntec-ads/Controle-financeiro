@@ -78,23 +78,18 @@ const removeTransaction = ID => {
 
 //Adicionar as transações do DOM.
 const addTransactionIntoDOM = ({ amount, name, id, category }) => {
-  const operator = amount < 0 ? '-' : '+';//Menor que 0, recebe a string (-),senão (+).   
-  const CSSClass = amount < 0 ? 'minus' : 'plus';//String para uma id class:(minus),ou (plus).
-  const amountWithoutOperator = Math.abs(amount);
-  const li = document.createElement('li');//Criação da linha HTML.
-  li.classList.add(CSSClass)//Criando o elemento (li) e adicionando a (CSSClass -> nome da classe).
+  const CSSClass = amount < 0 ? 'minus' : 'plus';
+  const amountFormatted = formatarParaReal(Math.abs(amount));
+  const li = document.createElement('li');
+  li.classList.add(CSSClass);
 
-  /* Setando a marcação interna dentro da (li) com o li.innerHTML */
   li.innerHTML = `
     ${name} 
     <span class="category-tag">${category}</span>
-    <span>${operator} R$ ${amountWithoutOperator}</span>
+    <span>${amountFormatted}</span>
     <button class="delete-btn" onClick="removeTransaction(${id})">x</button>
   `
   transactionUl.append(li);
-  /* Metodo append(Argumento)-insere o elemento como último filho.
-    Metodo prepend(Argumento)-insere o elemento com primeiro filho */
-
 }
 
 const getExpenses = transactionAmounts => Math.abs
@@ -170,7 +165,18 @@ const updateBalanceValues = () => {
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
 const init = () => {
   transactionUl.innerHTML = '';
-  transactions.forEach(addTransactionIntoDOM);
+  
+  // Separar e ordenar transações
+  const receitas = transactions.filter(t => t.amount >= 0)
+    .sort((a, b) => b.amount - a.amount);
+  
+  const despesas = transactions.filter(t => t.amount < 0)
+    .sort((a, b) => a.amount - b.amount);
+
+  // Adicionar primeiro as receitas, depois as despesas
+  receitas.forEach(addTransactionIntoDOM);
+  despesas.forEach(addTransactionIntoDOM);
+  
   updateBalanceValues();
   if (typeof updateCharts === 'function') { // Adiciona verificação
     updateCharts();
