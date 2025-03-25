@@ -1,4 +1,4 @@
 module.exports = {
-  MONGODB_URI: process.env.MONGODB_URI || 'sua_string_de_conexao_aqui',
-  JWT_SECRET: process.env.JWT_SECRET || 'seu_jwt_secret_aqui'
+  MONGODB_URI: "mongodb+srv://johntecads:uaRfl1ld4LxlII58@financeiro.tt6ni.mongodb.net/?retryWrites=true&w=majority&appName=Financeiro",
+  JWT_SECRET: 'chave_secreta_jwt_123'
 };

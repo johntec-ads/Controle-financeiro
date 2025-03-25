@@ -6,7 +6,10 @@ const Transaction = require('./db');
 const User = require('./models/User');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*', // Em produção, especifique o domínio correto
+  methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
+}));
 app.use(express.json());
 
 // Rota de registro

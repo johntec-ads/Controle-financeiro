@@ -162,35 +162,21 @@ const updateBalanceValues = () => {
   expenseDisplay.innerText = formatarParaReal(despesas);
 }
 
-/* Função que adiciona as transações no DOM , sempre que a pag for carregada */
-const init = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = 'login.html';
-      return;
-    }
+/* Função que adiciona as transações no DOM */
+const init = () => {
+  transactionUl.innerHTML = '';
+  
+  const receitas = transactions.filter(t => t.amount >= 0)
+    .sort((a, b) => b.amount - a.amount);
+  
+  const despesas = transactions.filter(t => t.amount < 0)
+    .sort((a, b) => a.amount - b.amount);
 
-    transactions = await api.getTransactions();
-    transactionUl.innerHTML = '';
-    
-    const receitas = transactions.filter(t => t.amount >= 0)
-      .sort((a, b) => b.amount - a.amount);
-    
-    const despesas = transactions.filter(t => t.amount < 0)
-      .sort((a, b) => a.amount - b.amount);
-
-    receitas.forEach(addTransactionIntoDOM);
-    despesas.forEach(addTransactionIntoDOM);
-    
-    updateBalanceValues();
-    updateCharts();
-  } catch (error) {
-    console.error('Erro ao carregar transações:', error);
-    if (error.message.includes('401')) {
-      window.location.href = 'login.html';
-    }
-  }
+  receitas.forEach(addTransactionIntoDOM);
+  despesas.forEach(addTransactionIntoDOM);
+  
+  updateBalanceValues();
+  updateCharts();
 }
 
 init();

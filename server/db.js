@@ -1,16 +1,35 @@
 const mongoose = require('mongoose');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const config = require('../config');
 
-// String de conexão correta para MongoDB Atlas
-const MONGODB_URI = 'mongodb+srv://johntecads:V3o09qjDHMYHJ3mo@financeiro.mpg04.mongodb.net/financeiro?retryWrites=true&w=majority';
-
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Conectado ao MongoDB Atlas com sucesso!');
-}).catch((error) => {
-  console.error('Erro ao conectar ao MongoDB:', error.message);
+const client = new MongoClient(config.MONGODB_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
 });
+
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log("Conectado ao MongoDB Atlas com sucesso!");
+
+    // Configurar mongoose com a mesma conexão
+    await mongoose.connect(config.MONGODB_URI, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao conectar ao MongoDB:', error);
+    process.exit(1);
+  }
+}
+
+connectDB();
 
 const TransactionSchema = new mongoose.Schema({
   name: String,
