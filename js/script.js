@@ -162,18 +162,15 @@ const updateBalanceValues = () => {
   expenseDisplay.innerText = formatarParaReal(despesas);
 }
 
-// Verificar autenticação
-const checkAuth = () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    window.location.href = 'login.html';
-  }
-}
-
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
 const init = async () => {
   try {
-    checkAuth(); // Verificar autenticação antes de carregar dados
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+
     transactions = await api.getTransactions();
     transactionUl.innerHTML = '';
     
