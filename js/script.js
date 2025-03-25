@@ -162,9 +162,18 @@ const updateBalanceValues = () => {
   expenseDisplay.innerText = formatarParaReal(despesas);
 }
 
+// Verificar autenticação
+const checkAuth = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+  }
+}
+
 /* Função que adiciona as transações no DOM , sempre que a pag for carregada */
 const init = async () => {
   try {
+    checkAuth(); // Verificar autenticação antes de carregar dados
     transactions = await api.getTransactions();
     transactionUl.innerHTML = '';
     
@@ -181,6 +190,9 @@ const init = async () => {
     updateCharts();
   } catch (error) {
     console.error('Erro ao carregar transações:', error);
+    if (error.message.includes('401')) {
+      window.location.href = 'login.html';
+    }
   }
 }
 
