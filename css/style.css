@@ -280,3 +280,35 @@ select {
 .category-item.protected button {
   display: none;
 }
+
+.login-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+  width: 90%;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+.meta-progress {
+  background: #f0f0f0;
+  border-radius: 10px;
+  height: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.meta-progress-bar {
+  height: 100%;
+  background: #2ecc71;
+  transition: width 0.3s ease;
+}
+
+.meta-progress-bar.warning {
+  background: #f1c40f;
+}
+
+.meta-progress-bar.danger {
+  background: #e74c3c;
+}
