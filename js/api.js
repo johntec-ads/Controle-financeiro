@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://controlecontabil.netlify.app';
 
 const getHeaders = () => {
   const token = localStorage.getItem('token');
