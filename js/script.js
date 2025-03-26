@@ -65,14 +65,34 @@ updateCategorySelects();
 // Remover código de localStorage
 let transactions = [];
 
-// Função para carregar transações do servidor
+// Melhorar função de carregamento de transações
 const loadTransactions = async () => {
   try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+
     transactions = await api.getTransactions();
+    
+    if (!Array.isArray(transactions)) {
+      throw new Error('Formato de dados inválido');
+    }
+
     init();
   } catch (error) {
-    alert('Erro ao carregar transações. Por favor, faça login novamente.');
-    window.location.href = 'login.html';
+    console.error('Erro ao carregar transações:', error);
+    
+    // Se for erro de autenticação, redirecionar para login
+    if (error.message.includes('Token') || error.message.includes('login')) {
+      localStorage.clear(); // Limpar dados inválidos
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    // Para outros erros, mostrar mensagem mais amigável
+    alert('Não foi possível carregar as transações. Tente novamente mais tarde.');
   }
 };
 
@@ -292,7 +312,7 @@ const deleteCategory = (category) => {
   }
 }
 
-// Carregar transações ao iniciar
+// Verificar autenticação antes de carregar a página
 document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token');
   if (!token) {

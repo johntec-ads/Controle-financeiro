@@ -10,15 +10,27 @@ async function login(email, senha) {
     
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error || 'Erro ao fazer login');
+      throw new Error(data.error || 'Credenciais inválidas');
     }
     
+    // Garantir que o token e dados do usuário são válidos
+    if (!data.token || !data.user) {
+      throw new Error('Resposta do servidor inválida');
+    }
+
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
+    
+    // Verificar se o token foi armazenado corretamente
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) {
+      throw new Error('Erro ao armazenar token');
+    }
+
     window.location.href = 'index.html';
   } catch (error) {
+    console.error('Erro detalhado:', error);
     alert(error.message);
-    console.error('Erro no login:', error);
   }
 }
 

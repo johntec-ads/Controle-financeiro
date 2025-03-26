@@ -18,17 +18,19 @@ const api = {
         headers: getHeaders()
       });
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao buscar transações');
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+        throw new Error('Sessão expirada');
       }
-      
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar transações');
+      }
+
       return response.json();
     } catch (error) {
-      console.error('Erro:', error);
-      if (error.message.includes('Token')) {
-        window.location.href = 'login.html';
-      }
+      console.error('Erro na API:', error);
       throw error;
     }
   },

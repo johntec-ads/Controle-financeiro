@@ -54,37 +54,50 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Middleware de autenticação - Adicionar log para debug
+// Middleware de autenticação melhorado
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
-    console.log('Token recebido:', token); // Log para debug
-    
+    const authHeader = req.header('Authorization');
+    if (!authHeader) {
+      throw new Error('Token não fornecido');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      throw new Error('Token inválido');
+    }
+
     const decoded = jwt.verify(token, 'secret_key');
-    console.log('Token decodificado:', decoded); // Log para debug
-    
     const user = await User.findOne({ _id: decoded.userId });
-    console.log('Usuário encontrado:', user); // Log para debug
     
-    if (!user) throw new Error();
-    
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
     req.user = user;
     req.token = token;
     next();
   } catch (error) {
-    console.error('Erro de autenticação:', error); // Log para debug
-    res.status(401).json({ error: 'Por favor, faça login.' });
+    console.error('Erro de autenticação:', error);
+    res.status(401).json({ 
+      error: 'Sessão expirada ou inválida. Por favor, faça login novamente.' 
+    });
   }
 };
 
-// Rota de transações - Adicionar proteção e associação com usuário
+// Rota de transações melhorada
 app.get('/transactions', auth, async (req, res) => {
   try {
-    const transactions = await Transaction.find({ user: req.user._id });
+    const transactions = await Transaction.find({ user: req.user._id })
+      .sort('-date')
+      .limit(100); // Limitar resultados para melhor performance
+
     res.json(transactions);
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
-    res.status(500).json({ error: 'Erro ao buscar transações' });
+    res.status(500).json({ 
+      error: 'Erro ao carregar transações. Tente novamente.' 
+    });
   }
 });
 
