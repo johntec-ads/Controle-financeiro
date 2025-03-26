@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Financeiro</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="card">
+      <h3>Resumo Mensal</h3>
+      <canvas id="monthlyChart"></canvas>
+    </div>
+    
+    <div class="card">
+      <h3>Metas Financeiras</h3>
+      <div id="metas-progress"></div>
+    </div>
+    
+    <div class="card">
+      <h3>Categorias Mais Usadas</h3>
+      <canvas id="categoryChart"></canvas>
+    </div>
+  </div>
+  
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
