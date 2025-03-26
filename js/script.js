@@ -62,19 +62,29 @@ addCategoryBtn.addEventListener('click', openModal);
 // Inicializar os selects de categoria
 updateCategorySelects();
 
-//API salva os dados no local storage.
-const localStorageTransactions = JSON.parse(localStorage
-  .getItem('transactions'))
-let transactions = localStorage
-  .getItem('transactions') !== null ? localStorageTransactions : []
+// Remover código de localStorage
+let transactions = [];
 
-const removeTransaction = ID => {
-  transactions = transactions.filter(transaction =>
-    transaction.id !== ID)
-  updateLocalStorage()
-  init()
+// Função para carregar transações do servidor
+const loadTransactions = async () => {
+  try {
+    transactions = await api.getTransactions();
+    init();
+  } catch (error) {
+    alert('Erro ao carregar transações. Por favor, faça login novamente.');
+    window.location.href = 'login.html';
+  }
+};
+
+const removeTransaction = async (id) => {
+  try {
+    await api.deleteTransaction(id);
+    transactions = transactions.filter(transaction => transaction.id !== id);
+    init();
+  } catch (error) {
+    alert('Erro ao deletar transação');
+  }
 }
-
 
 //Adicionar as transações do DOM.
 const addTransactionIntoDOM = ({ amount, name, id, category }) => {
@@ -206,28 +216,39 @@ const cleanInputs = () => {
   inputTransactionDate.value = ''
 }
 
-const handFormSubmit = event => {
-  event.preventDefault()
+const handFormSubmit = async (event) => {
+  event.preventDefault();
 
   const transactionName = inputTransactionName.value.trim();
   const transactionAmount = inputTransactionAmount.value.trim();
   const transactionCategory = inputTransactionCategory.value;
   const transactionType = inputTransactionType.value;
   const transactionDate = inputTransactionDate.value;
-  const isSomeInputEmpty = transactionName === '' || transactionAmount === '';
 
-  if (isSomeInputEmpty) {
-    alert('Por favor,os campos nomes e valores são obrigatórios.')
-    return
+  if (!transactionName || !transactionAmount) {
+    alert('Por favor, preencha nome e valor');
+    return;
   }
 
-  addToTransactionsArray(transactionName, transactionAmount, transactionCategory, transactionType, transactionDate);
-  init();
+  try {
+    const amount = transactionType === 'expense' ? 
+      -Math.abs(transactionAmount) : 
+      Math.abs(transactionAmount);
 
-  updateLocalStorage();
+    const newTransaction = await api.addTransaction({
+      name: transactionName,
+      amount: Number(amount),
+      category: transactionCategory,
+      date: transactionDate || new Date().toISOString().split('T')[0]
+    });
 
-  cleanInputs();
-}
+    transactions.push(newTransaction);
+    init();
+    cleanInputs();
+  } catch (error) {
+    alert('Erro ao salvar transação');
+  }
+};
 
 form.addEventListener('submit', handFormSubmit)
 
@@ -270,3 +291,13 @@ const deleteCategory = (category) => {
     openCategoryManager(); // Atualiza a lista de categorias
   }
 }
+
+// Carregar transações ao iniciar
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  loadTransactions();
+});
