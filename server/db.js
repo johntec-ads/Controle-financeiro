@@ -1,35 +1,35 @@
 const mongoose = require('mongoose');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const config = require('../config');
+const config = require('./config'); // Ajustando o caminho
 
-const client = new MongoClient(config.MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+// Opções de conexão
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
+
+// Conexão com MongoDB
+mongoose.connect(config.MONGODB_URI, options);
+
+// Eventos de conexão
+const db = mongoose.connection;
+
+db.on('error', (error) => {
+  console.error('Erro na conexão com MongoDB:', error);
 });
 
-async function connectDB() {
-  try {
-    await client.connect();
-    console.log("Conectado ao MongoDB Atlas com sucesso!");
+db.on('connected', () => {
+  console.log('MongoDB conectado com sucesso!');
+});
 
-    // Configurar mongoose com a mesma conexão
-    await mongoose.connect(config.MONGODB_URI, {
-      serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-      }
-    });
-  } catch (error) {
-    console.error('Erro ao conectar ao MongoDB:', error);
-    process.exit(1);
-  }
-}
+db.on('disconnected', () => {
+  console.log('MongoDB desconectado');
+});
 
-connectDB();
+db.on('reconnected', () => {
+  console.log('MongoDB reconectado');
+});
 
 const TransactionSchema = new mongoose.Schema({
   name: String,
@@ -44,4 +44,7 @@ const TransactionSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Transaction', TransactionSchema);
+module.exports = {
+  connection: db,
+  Transaction: mongoose.model('Transaction', TransactionSchema)
+};
