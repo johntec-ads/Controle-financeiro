@@ -24,45 +24,82 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Rota de login
+// Rota de login - Melhorar validação e resposta
 app.post('/login', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user || !(await bcrypt.compare(req.body.senha, user.senha))) {
-      throw new Error('Credenciais inválidas');
+    const { email, senha } = req.body;
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Email não encontrado' });
     }
-    const token = jwt.sign({ userId: user._id }, 'secret_key');
-    res.json({ user, token });
+    
+    const senhaCorreta = await bcrypt.compare(senha, user.senha);
+    if (!senhaCorreta) {
+      return res.status(401).json({ error: 'Senha incorreta' });
+    }
+    
+    const token = jwt.sign({ userId: user._id }, 'secret_key', { expiresIn: '24h' });
+    res.json({ 
+      user: {
+        id: user._id,
+        nome: user.nome,
+        email: user.email
+      }, 
+      token 
+    });
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    console.error('Erro no login:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
-// Middleware de autenticação
+// Middleware de autenticação - Adicionar log para debug
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization').replace('Bearer ', '');
+    console.log('Token recebido:', token); // Log para debug
+    
     const decoded = jwt.verify(token, 'secret_key');
+    console.log('Token decodificado:', decoded); // Log para debug
+    
     const user = await User.findOne({ _id: decoded.userId });
+    console.log('Usuário encontrado:', user); // Log para debug
+    
     if (!user) throw new Error();
+    
     req.user = user;
+    req.token = token;
     next();
   } catch (error) {
+    console.error('Erro de autenticação:', error); // Log para debug
     res.status(401).json({ error: 'Por favor, faça login.' });
   }
 };
 
-// Buscar transações
+// Rota de transações - Adicionar proteção e associação com usuário
 app.get('/transactions', auth, async (req, res) => {
-  const transactions = await Transaction.find({ user: req.user._id }).sort('-date');
-  res.json(transactions);
+  try {
+    const transactions = await Transaction.find({ user: req.user._id });
+    res.json(transactions);
+  } catch (error) {
+    console.error('Erro ao buscar transações:', error);
+    res.status(500).json({ error: 'Erro ao buscar transações' });
+  }
 });
 
-// Adicionar transação
-app.post('/transactions', async (req, res) => {
-  const transaction = new Transaction(req.body);
-  await transaction.save();
-  res.json(transaction);
+app.post('/transactions', auth, async (req, res) => {
+  try {
+    const transaction = new Transaction({
+      ...req.body,
+      user: req.user._id
+    });
+    await transaction.save();
+    res.status(201).json(transaction);
+  } catch (error) {
+    console.error('Erro ao criar transação:', error);
+    res.status(500).json({ error: 'Erro ao criar transação' });
+  }
 });
 
 // Deletar transação

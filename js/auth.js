@@ -9,15 +9,16 @@ async function login(email, senha) {
     });
     
     const data = await response.json();
-    if (response.ok) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      window.location.href = 'index.html';
-    } else {
-      alert(data.error);
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao fazer login');
     }
+    
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    window.location.href = 'index.html';
   } catch (error) {
-    alert('Erro ao fazer login');
+    alert(error.message);
+    console.error('Erro no login:', error);
   }
 }
 

@@ -1,9 +1,15 @@
 const API_URL = 'http://localhost:3000';
 
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${localStorage.getItem('token')}`
-});
+const getHeaders = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('Token não encontrado');
+  }
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+};
 
 const api = {
   async getTransactions() {
@@ -11,10 +17,18 @@ const api = {
       const response = await fetch(`${API_URL}/transactions`, {
         headers: getHeaders()
       });
-      if (!response.ok) throw new Error('Erro ao buscar transações');
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao buscar transações');
+      }
+      
       return response.json();
     } catch (error) {
       console.error('Erro:', error);
+      if (error.message.includes('Token')) {
+        window.location.href = 'login.html';
+      }
       throw error;
     }
   },
