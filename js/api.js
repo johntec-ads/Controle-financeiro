@@ -14,6 +14,7 @@ const getHeaders = () => {
 const api = {
   async getTransactions() {
     try {
+      console.log('Fazendo requisição para buscar transações...');
       const response = await fetch(`${API_URL}/transactions`, {
         headers: getHeaders()
       });
@@ -24,28 +25,46 @@ const api = {
         throw new Error('Sessão expirada');
       }
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Erro ao buscar transações');
+        throw new Error(data.error || 'Erro ao buscar transações');
       }
 
-      return response.json();
+      console.log('Transações recebidas:', data);
+      return data;
     } catch (error) {
-      console.error('Erro na API:', error);
+      console.error('Erro detalhado na API:', error);
       throw error;
     }
   },
 
   async addTransaction(transaction) {
     try {
+      console.log('Preparando envio da transação:', transaction);
+      
+      // Validar dados antes de enviar
+      if (!transaction.name || !transaction.amount || !transaction.category) {
+        throw new Error('Dados incompletos');
+      }
+
       const response = await fetch(`${API_URL}/transactions`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(transaction)
       });
-      if (!response.ok) throw new Error('Erro ao adicionar transação');
-      return response.json();
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Erro na resposta:', data);
+        throw new Error(data.error || 'Erro ao adicionar transação');
+      }
+
+      console.log('Transação criada com sucesso:', data);
+      return data;
     } catch (error) {
-      console.error('Erro:', error);
+      console.error('Erro detalhado:', error);
       throw error;
     }
   },

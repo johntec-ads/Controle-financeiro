@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const Transaction = require('./db');
+const { Transaction } = require('./db'); // Corrigir importação
 const User = require('./models/User');
 
 const app = express();
@@ -88,30 +88,60 @@ const auth = async (req, res, next) => {
 // Rota de transações melhorada
 app.get('/transactions', auth, async (req, res) => {
   try {
-    const transactions = await Transaction.find({ user: req.user._id })
-      .sort('-date')
-      .limit(100); // Limitar resultados para melhor performance
+    console.log('Buscando transações para usuário:', req.user._id);
+    
+    const transactions = await Transaction.find({ 
+      user: req.user._id 
+    }).sort({ date: -1 });
 
+    console.log('Transações encontradas:', transactions);
     res.json(transactions);
   } catch (error) {
-    console.error('Erro ao buscar transações:', error);
+    console.error('Erro detalhado ao buscar transações:', error);
     res.status(500).json({ 
-      error: 'Erro ao carregar transações. Tente novamente.' 
+      error: 'Erro ao buscar transações',
+      details: error.message 
     });
   }
 });
 
 app.post('/transactions', auth, async (req, res) => {
   try {
+    console.log('Usuário autenticado:', req.user._id);
+    console.log('Dados recebidos:', req.body);
+
+    // Validar dados recebidos
+    if (!req.body.name || !req.body.amount || !req.body.category) {
+      return res.status(400).json({ 
+        error: 'Dados incompletos',
+        details: 'Nome, valor e categoria são obrigatórios' 
+      });
+    }
+
+    // Criar objeto da transação
     const transaction = new Transaction({
-      ...req.body,
+      name: req.body.name,
+      amount: Number(req.body.amount),
+      category: req.body.category,
+      date: req.body.date ? new Date(req.body.date) : new Date(),
       user: req.user._id
     });
-    await transaction.save();
-    res.status(201).json(transaction);
+
+    console.log('Transação a ser salva:', transaction);
+
+    // Salvar no banco de dados
+    const savedTransaction = await transaction.save();
+    
+    console.log('Transação salva com sucesso:', savedTransaction);
+    res.status(201).json(savedTransaction);
+
   } catch (error) {
-    console.error('Erro ao criar transação:', error);
-    res.status(500).json({ error: 'Erro ao criar transação' });
+    console.error('Erro completo:', error);
+    res.status(500).json({ 
+      error: 'Erro ao criar transação',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

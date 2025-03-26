@@ -74,25 +74,26 @@ const loadTransactions = async () => {
       return;
     }
 
+    console.log('Iniciando carregamento de transações...');
     transactions = await api.getTransactions();
     
     if (!Array.isArray(transactions)) {
+      console.error('Dados recebidos não são um array:', transactions);
       throw new Error('Formato de dados inválido');
     }
 
+    console.log('Transações carregadas com sucesso:', transactions);
     init();
   } catch (error) {
-    console.error('Erro ao carregar transações:', error);
+    console.error('Erro detalhado ao carregar transações:', error);
     
-    // Se for erro de autenticação, redirecionar para login
-    if (error.message.includes('Token') || error.message.includes('login')) {
-      localStorage.clear(); // Limpar dados inválidos
+    if (error.message.includes('Token') || error.message.includes('Sessão')) {
+      localStorage.clear();
       window.location.href = 'login.html';
       return;
     }
     
-    // Para outros erros, mostrar mensagem mais amigável
-    alert('Não foi possível carregar as transações. Tente novamente mais tarde.');
+    alert('Erro ao carregar transações. Por favor, recarregue a página.');
   }
 };
 
@@ -245,28 +246,37 @@ const handFormSubmit = async (event) => {
   const transactionType = inputTransactionType.value;
   const transactionDate = inputTransactionDate.value;
 
-  if (!transactionName || !transactionAmount) {
-    alert('Por favor, preencha nome e valor');
+  if (!transactionName || !transactionAmount || !transactionCategory) {
+    alert('Por favor, preencha todos os campos obrigatórios');
     return;
   }
 
   try {
     const amount = transactionType === 'expense' ? 
-      -Math.abs(transactionAmount) : 
-      Math.abs(transactionAmount);
+      -Math.abs(parseFloat(transactionAmount)) : 
+      Math.abs(parseFloat(transactionAmount));
+
+    console.log('Preparando transação:', {
+      name: transactionName,
+      amount: amount,
+      category: transactionCategory,
+      date: transactionDate
+    }); // Log para debug
 
     const newTransaction = await api.addTransaction({
       name: transactionName,
-      amount: Number(amount),
+      amount: amount,
       category: transactionCategory,
       date: transactionDate || new Date().toISOString().split('T')[0]
     });
 
     transactions.push(newTransaction);
+    alert('Transação adicionada com sucesso!');
     init();
     cleanInputs();
   } catch (error) {
-    alert('Erro ao salvar transação');
+    console.error('Erro ao salvar transação:', error);
+    alert(error.message || 'Erro ao salvar transação');
   }
 };
 
@@ -320,4 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   loadTransactions();
+
 });
+function logout() {
+  localStorage.clear();
+  window.location.href = 'login.html';
+}

@@ -32,19 +32,37 @@ db.on('reconnected', () => {
 });
 
 const TransactionSchema = new mongoose.Schema({
-  name: String,
-  amount: Number,
-  category: String,
-  date: Date,
-  type: String,
+  name: {
+    type: String,
+    required: [true, 'Nome é obrigatório']
+  },
+  amount: {
+    type: Number,
+    required: [true, 'Valor é obrigatório']
+  },
+  category: {
+    type: String,
+    required: [true, 'Categoria é obrigatória']
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+const Transaction = mongoose.model('Transaction', TransactionSchema);
 
 module.exports = {
   connection: db,
-  Transaction: mongoose.model('Transaction', TransactionSchema)
+  Transaction
 };
