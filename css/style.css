@@ -1,7 +1,16 @@
 @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
 
 :root {
-  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.7);
+  --background-dark: #121212;
+  --card-dark: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --accent-color: #2e75cc;
+  --success-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --input-background: #2d2d2d;
+  --border-color: #333333;
 }
 
 * {
@@ -9,7 +18,8 @@
 }
 
 body {
-  background-color: #f7f7f7;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,10 +34,10 @@ body {
   width: 350px;
 }
 
-h1 {
+h1, h2, h3, h4 {
   letter-spacing: 1px;
   margin: 0;
-  color: #2e75cc;
+  color: var(--text-primary);
 }
 
 h3 {
@@ -42,12 +52,13 @@ h4 {
 }
 
 .inc-exp-container {
-  background-color: #fff;
+  background-color: var(--card-dark);
   box-shadow: var(--box-shadow);
   padding: 20px;
   display: flex;
   justify-content: space-between;
   margin: 20px 0;
+  border: 1px solid var(--border-color);
 }
 
 .inc-exp-container > div {
@@ -66,11 +77,11 @@ h4 {
 }
 
 .money.plus {
-  color: #2ecc71;
+  color: var(--success-color);
 }
 
 .money.minus {
-  color: #c0392b;
+  color: var(--danger-color);
 }
 
 label {
@@ -79,28 +90,23 @@ label {
 }
 
 input[type='text'],
-input[type='number'] {
-  border: 1px solid #dedede;
-  border-radius: 2px;
-  display: block;
-  font-size: 16px;
-  padding: 10px;
-  width: 100%;
-}
-
+input[type='number'],
+input[type='date'],
+input[type='email'],
+input[type='password'],
 select {
-  border: 1px solid #dedede;
-  border-radius: 2px;
+  background-color: var(--input-background);
+  border: 1px solid var(--border-color);
   display: block;
   font-size: 16px;
   padding: 10px;
   width: 100%;
-  margin-bottom: 10px;
+  color: var(--text-primary);
 }
 
 .btn {
   cursor: pointer;
-  background-color: #9c88ff;
+  background-color: var(--accent-color);
   box-shadow: var(--box-shadow);
   color: #fff;
   border: 0;
@@ -140,14 +146,15 @@ select {
 }
 
 .transactions li {
-  background-color: #fff;
+  background-color: var(--card-dark);
   box-shadow: var(--box-shadow);
-  color: #333;
+  color: var(--text-primary);
   display: flex;
   justify-content: space-between;
   position: relative;
   padding: 10px;
   margin: 10px 0;
+  border: 1px solid var(--border-color);
 }
 
 .transactions li.plus {
@@ -179,27 +186,30 @@ select {
 }
 
 .category-tag {
-  background-color: #e0e0e0;
+  background-color: var(--input-background);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 12px;
   margin: 0 8px;
+  color: var(--text-secondary);
 }
 
 .charts-container {
   margin: 20px 0;
   padding: 20px;
-  background-color: #fff;
+  background-color: var(--card-dark);
   border-radius: 4px;
   box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .filters {
-  background-color: #f8f9fa;
+  background-color: var(--card-dark);
   padding: 15px;
   margin: 15px 0;
   border-radius: 4px;
   box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .filters h4 {
@@ -231,12 +241,13 @@ select {
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: var(--card-dark);
   margin: 15% auto;
   padding: 20px;
   border-radius: 4px;
   width: 80%;
   max-width: 500px;
+  border: 1px solid var(--border-color);
 }
 
 .btn-cancel {
@@ -259,9 +270,10 @@ select {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: #f8f9fa;
+  background: var(--input-background);
   margin: 5px 0;
   border-radius: 4px;
+  color: var(--text-primary);
 }
 
 .category-item button {
@@ -282,13 +294,63 @@ select {
 }
 
 .login-container {
-  background: #fff;
-  padding: 20px;
-  border-radius: 4px;
+  background-color: var(--card-dark);
+  padding: 30px;
+  border-radius: 8px;
   box-shadow: var(--box-shadow);
   width: 90%;
   max-width: 400px;
   margin: 20px auto;
+  border: 1px solid var(--border-color);
+}
+
+.login-container h2 {
+  text-align: center;
+  color: #2e75cc;
+  margin-bottom: 20px;
+}
+
+.login-container .form-control {
+  margin-bottom: 15px;
+}
+
+.login-container input {
+  height: 45px;
+  font-size: 16px;
+  width: 100%;
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+  background-color: var(--input-background);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.login-container input:focus {
+  border-color: #2e75cc;
+  outline: none;
+}
+
+.login-container .btn {
+  margin-top: 10px;
+  height: 45px;
+  font-size: 16px;
+  background-color: #2e75cc;
+}
+
+.login-container p {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.login-container a {
+  color: #2e75cc;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
 }
 
 .meta-progress {
@@ -311,4 +373,60 @@ select {
 
 .meta-progress-bar.danger {
   background: #e74c3c;
+}
+
+// Estilo para inputs focados
+input:focus, select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 117, 204, 0.2);
+}
+
+// Ajustes para o gráfico
+.charts-container canvas {
+  filter: brightness(0.9);
+}
+
+// Estilização de scrollbars
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+}
+
+.toggle-password:hover {
+  color: var(--accent-color);
+}
+
+.password-field input {
+  padding-right: 40px;
 }

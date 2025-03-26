@@ -63,13 +63,15 @@ const updateCharts = () => {
         title: {
           display: true,
           text: 'Distribuição de Receitas e Despesas',
-          font: { size: 16 }
+          font: { size: 16 },
+          color: '#ffffff'
         },
         legend: {
           position: 'bottom',
           labels: { 
             boxWidth: 12,
-            padding: 10
+            padding: 10,
+            color: '#ffffff'
           }
         },
         tooltip: {
@@ -78,6 +80,24 @@ const updateCharts = () => {
               const value = context.raw;
               return `R$ ${value.toFixed(2)}`;
             }
+          }
+        }
+      },
+      scales: {
+        y: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: '#ffffff'
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: '#ffffff'
           }
         }
       }
